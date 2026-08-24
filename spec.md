@@ -18,11 +18,11 @@ Also out of scope: the vocabulary contracts of individual types (e.g. the field 
 
 The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in [BCP 14](https://www.rfc-editor.org/info/bcp14) ([RFC 2119](https://www.rfc-editor.org/rfc/rfc2119), [RFC 8174](https://www.rfc-editor.org/rfc/rfc8174)) when, and only when, they appear in all capitals.
 
-**Fact.** A fact is a mapping from relative paths to byte strings — nothing more. It carries no timestamps, no permissions, no empty directories, no symbolic links.
+**Fact.** A fact is a mapping from relative paths to byte strings — nothing more. It carries no timestamps, no permissions, no empty directories, no symbolic links. Directories exist only as prefixes of file paths: a container that holds an empty directory reproduces the same mapping as one that does not, so an empty directory is never part of an object and never enters its hash (the hash encoding below *can* express one; this format simply never produces one — and a receiver MUST treat a directory node with no entries in an object tree as a format-layer defect, §8).
 
 **Container.** Any encoding from which the path → bytes mapping can be reproduced (a directory on disk, a zip file, a set of DIDComm attachments) is a legal container. **No container has normative status**; all semantics attach to the mapping.
 
-**Hash encoding.** Hashes use the `signed-dir` tree-hash scheme: a leaf is the raw-codec CID of its bytes; a directory node is the CID of its dag-json node. One hash encoding serves the whole stack. The CID codec is a built-in discriminator: raw = bytes, dag-json = tree.
+**Hash encoding.** Hashes use the `signed-dir` tree-hash scheme, which is UnixFS under the IPIP-499 `unixfs-v1-2025` profile (CIDv1, sha-256, raw leaves, 1 MiB chunks, balanced layout, dag-pb directory nodes, HAMT sharding past 256 KiB of block bytes): a file of at most 1 MiB is the raw-codec CID of its bytes; a larger file roots in a dag-pb node over raw chunks; a directory is a dag-pb UnixFS directory node. One hash encoding serves the whole stack, and the same mapping hashes to the same root as `ipfs add`, so any UnixFS implementation can recompute or verify an object's version identity. The codec alone does not tell a file from a directory (a dag-pb CID can root either); the UnixFS `Data` field does.
 
 ## 2. Object Format
 
@@ -65,7 +65,7 @@ The members defined here form the **structural contract shared by every type for
 - `id` — REQUIRED. A UUIDv7 string; the object's entity identity.
 - `content` — OPTIONAL. The object's principal bytes, in one of two forms:
   - **in-tree**: `{mediaType, path}` — `path` MUST point into `files/`;
-  - **inline**: `{mediaType, text}` — in this form `files/` MAY be empty, so **a lone `index.json` is a complete object**.
+  - **inline**: `{mediaType, text}` — in this form `files/` MAY be absent (an empty `files/` is not a thing: the fact has no empty directories), so **a lone `index.json` is a complete object**.
 
   Whether `content` is required is decided by each type's vocabulary contract (a post will require it).
 
@@ -115,7 +115,7 @@ A bundle is the value of `bundle(object, card?)`:
 ## 8. Malformed (One Judgment per Layer)
 
 1. **Container layer**: no unique path → bytes mapping can be reproduced.
-2. **Format layer**: (object) no `index.json` at the root, or `index.json` not well-formed — not JSON / missing `format` / missing `id` / `content.path` escaping `files/`; (bundle) `object/index.json` absent or not well-formed.
+2. **Format layer**: (object) no `index.json` at the root, or `index.json` not well-formed — not JSON / missing `format` / missing `id` / `content.path` escaping `files/`; a hashed object tree containing an empty directory node (a fact cannot contain one, so a signed root that reaches one was not computed over a fact); (bundle) `object/index.json` absent or not well-formed.
 3. **Closure layer**: `content.path` names a path with no bytes in the mapping. This is the only possible hole in version 1 — `files/` is declaration-free, so "declared but absent" cannot arise.
 
 NOT malformed: broken body links; a card that fails verification (degrade); unknown top-level members; reserved bundle entries; an unknown `format` (generic processing).
