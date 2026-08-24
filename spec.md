@@ -101,7 +101,7 @@ A bundle is the value of `bundle(object, card?)`:
 
 ## 6. Signing (an Optional Layer)
 
-- The signature card is a `signed-dir` root card: a JWS over `{did, id, expires, root}`, where `root` is the root CID of the object's canonical tree. The card is out-of-tree testimony; **the verifiable projection is the bundle** — the materialization of `envelope(card, content)`. Replacing a card never touches content.
+- The signature card is a `signed-dir` root card: a JWS over `{did, root}`, where `root` is the root CID of the object's canonical tree. The card is out-of-tree testimony about a fact — "this DID stands behind this tree" — and **nothing more**: it carries no issue order, no expiry, and no takedown form. Two cards over the same `(did, root)` are equivalent. Whether a tree is the object's *current* version is answered by the tree's own `id` and `updated` (§12) and by mutable references, never by the signature; retraction is a new version, not an un-signing. **The verifiable projection is the bundle** — the materialization of `envelope(card, content)`. Replacing a card never touches content.
 - The card is an optional layer. Pairwise authenticated encryption already guarantees origin; a card is needed only for forwarding and third-party verification.
 - The signing domain is trees. **This format defines no signature over bare bytes.**
 - Version 1 admits a single card: a bundle carries at most the one `card.jws`.
