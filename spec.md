@@ -22,7 +22,7 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 
 **Container.** Any encoding from which the path → bytes mapping can be reproduced (a directory on disk, a zip file, a set of DIDComm attachments) is a legal container. **No container has normative status**; all semantics attach to the mapping.
 
-**Hash encoding.** Hashes use the `signed-dir` tree-hash scheme, which is UnixFS under the IPIP-499 `unixfs-v1-2025` profile (CIDv1, sha-256, raw leaves, 1 MiB chunks, balanced layout, dag-pb directory nodes, HAMT sharding past 256 KiB of block bytes): a file of at most 1 MiB is the raw-codec CID of its bytes; a larger file roots in a dag-pb node over raw chunks; a directory is a dag-pb UnixFS directory node. One hash encoding serves the whole stack, and the same mapping hashes to the same root as `ipfs add`, so any UnixFS implementation can recompute or verify an object's version identity. The codec alone does not tell a file from a directory (a dag-pb CID can root either); the UnixFS `Data` field does.
+**Hash encoding.** Hashes are UnixFS under the IPIP-499 `unixfs-v1-2025` profile (CIDv1, sha-256, raw leaves, 1 MiB chunks, balanced layout, dag-pb directory nodes, HAMT sharding past 256 KiB of block bytes): a file of at most 1 MiB is the raw-codec CID of its bytes; a larger file roots in a dag-pb node over raw chunks; a directory is a dag-pb UnixFS directory node. One hash encoding serves the whole stack, and the same mapping hashes to the same root as `ipfs add`, so any UnixFS implementation can recompute or verify an object's version identity. The codec alone does not tell a file from a directory (a dag-pb CID can root either); the UnixFS `Data` field does.
 
 ## 2. Object Format
 
@@ -34,7 +34,7 @@ An object is a tree with exactly two things at its root:
   files/            # the object's own bytes (§4)
 ```
 
-**Canonical tree.** The canonical tree of an object is `index.json` plus the entire `files/` subtree. It is taken by enumeration — never by name-based exclusion. There are no out-of-tree entries and no exclusion rules inside an object: **an object is pure fact**. The card stands beside the object (§5), not inside it.
+**Canonical tree.** The canonical tree of an object is `index.json` plus the entire `files/` subtree, less hidden entries (§4). It is taken by enumeration; the one name-based rule is the hash profile's own, not this format's. There are no out-of-tree entries and no other exclusion rules inside an object: **an object is pure fact**. The card stands beside the object (§5), not inside it.
 
 **Identity.**
 
@@ -82,6 +82,8 @@ A type's own vocabulary members (`name`, `published`, `updated`, `summary`, `tag
 - The entire `files/` subtree is the object's own bytes: **all of it enters the root hash, all of it is covered by the card, and none of it is declared per file.** Closure computation depends on no body parser: the canonical tree is itself the complete closure.
 - Bytes in `files/` are **values**: they have no `id` and no independent life; their identity is absorbed by the object's root hash.
 - Version 1 defines only the trivial encoding: paths inside `files/` are real paths, and directory structure carries no semantics (layout is the object's private business).
+- **Hidden entries are not part of the tree.** The `unixfs-v1-2025` profile excludes hidden entities by default; this format fixes what that means: a path is hidden iff any of its segments begins with `.`. The rule is a function of the name alone (the mapping has no platform attributes), so `files/.DS_Store` and `files/.git/…` never enter the hash, and `ipfs add -r` of the same folder yields the same root. A `content.path` with a hidden segment can never have bytes and is malformed (§8).
+- **A fact has no symbolic links.** A container that holds one cannot reproduce a path → bytes mapping for it; a reader MUST refuse such a container (never follow the link, never silently drop it). This is a deliberate departure from the profile, which preserves symlinks as UnixFS `Type=4` nodes: a folder with a symlink is not an object at all, rather than an object with a different hash.
 - **Body references** are written as in-tree relative paths: `![figure](files/images/fig1.jpg)`. A reference to a path that does not exist is a **broken link** — a rendering-layer placeholder, not a malformed object. An absolute `http(s)` URL in the body is an ordinary external link and MUST NOT be loaded automatically (under end-to-end encryption, an external fetch leaks the reader's identity); it opens on click.
 - Media types: `content` is declared by the index; other files under `files/` are typed by extension.
 
@@ -117,8 +119,8 @@ A signed object is the value of `sign(object, card)`:
 
 ## 8. Malformed (One Judgment per Layer)
 
-1. **Container layer**: no unique path → bytes mapping can be reproduced.
-2. **Format layer**: (object) no `index.json` at the root, or `index.json` not well-formed — not JSON / missing `format` / missing `id` / `content.path` escaping `files/`; a hashed object tree containing an empty directory node (a fact cannot contain one, so a signed root that reaches one was not computed over a fact); (signed object) `object/index.json` absent or not well-formed; (card) a JWS that is not an `estoc/object-card`, or whose `kid` is not the payload's `did`.
+1. **Container layer**: no unique path → bytes mapping can be reproduced (a symbolic link, a duplicate zip entry).
+2. **Format layer**: (object) no `index.json` at the root, or `index.json` not well-formed — not JSON / missing `format` / missing `id` / `content.path` escaping `files/` or naming a hidden entry; a hashed object tree containing an empty directory node (a fact cannot contain one, so a signed root that reaches one was not computed over a fact); (signed object) `object/index.json` absent or not well-formed; (card) a JWS that is not an `estoc/object-card`, or whose `kid` is not the payload's `did`.
 3. **Closure layer**: `content.path` names a path with no bytes in the mapping. This is the only possible hole in version 1 — `files/` is declaration-free, so "declared but absent" cannot arise.
 
 NOT malformed: broken body links; a card that fails verification (degrade); unknown top-level members; entries beside `object/` and `card.jws`; an unknown `format` (generic processing).
