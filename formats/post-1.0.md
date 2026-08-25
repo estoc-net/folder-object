@@ -1,6 +1,6 @@
 # Post 1.0 — Type Format `https://estoc.dev/post/1.0`
 
-**Status:** Draft — 2026-08-24. Companion to the structure layer, [spec.md](../spec.md) §3.1. This page defines only the vocabulary members of a post; everything structural (`format`, `id`, `content`, `files/`, hashing, bundles, cards) is inherited unchanged.
+**Status:** Draft — 2026-08-24. Companion to the structure layer, [spec.md](../spec.md) §3.1. This page defines only the vocabulary members of a post; everything structural (`format`, `id`, `content`, `files/`, hashing, cards, signed objects) is inherited unchanged.
 
 A **post** is an object whose principal bytes are a piece of authored text — an article, a note, a micro-post. It is the type behind a blog entry and behind the DIDComm share message; the same object serves both.
 
@@ -22,7 +22,7 @@ Readers MUST ignore unknown members (spec §3.2). Writers MUST NOT emit `objects
 
 ## 2. What is deliberately absent
 
-- **No `attributedTo` / author.** Who stands behind a post is answered by the bundle's card (spec §6), not restated as metadata — metadata that repeats testimony is a second source of truth that can disagree with the first. A body may of course name its authors in prose.
+- **No `attributedTo` / author.** Who stands behind a post is answered by the card (spec §6) — signing a `post/1.0` object *is* publishing it — not restated as metadata — metadata that repeats testimony is a second source of truth that can disagree with the first. A body may of course name its authors in prose.
 - **No `url` / `link`.** An object has no location; locations are transport hints (spec §11).
 - **No rendered HTML alongside the source.** The body is the single fact; every HTML page is a projection produced by a renderer.
 - **No front matter in the body.** The index is the metadata carrier; a body that also carries front matter would be a second one.
