@@ -1,3 +1,3 @@
 The tide started rising at dusk, light flat on the water.
 
-![sunset](files/images/sunset.png)
+![sunset](images/sunset.png)

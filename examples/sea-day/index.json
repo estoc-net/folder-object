@@ -4,5 +4,5 @@
   "name": "A Day at the Sea",
   "published": "2026-08-24T10:30:00Z",
   "updated": "2026-08-24T10:30:00Z",
-  "content": { "mediaType": "text/x-djot", "path": "files/body.dj" }
+  "content": { "mediaType": "text/markdown", "path": "files/body.md" }
 }

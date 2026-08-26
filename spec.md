@@ -51,7 +51,7 @@ Entries outside the canonical tree that happen to share a container with an obje
 {
   "format": "https://estoc.dev/post/1.0",
   "id": "01a03110-7c1e-7b3a-9f42-3d5e8a1b2c04",
-  "content": { "mediaType": "text/x-djot", "path": "files/body.dj" }
+  "content": { "mediaType": "text/markdown", "path": "files/body.md" }
 }
 ```
 
@@ -84,7 +84,7 @@ A type's own vocabulary members (`name`, `published`, `updated`, `summary`, `tag
 - Version 1 defines only the trivial encoding: paths inside `files/` are real paths, and directory structure carries no semantics (layout is the object's private business).
 - **Hidden entries are not part of the tree.** The `unixfs-v1-2025` profile excludes hidden entities by default; this format fixes what that means: a path is hidden iff any of its segments begins with `.`. The rule is a function of the name alone (the mapping has no platform attributes), so `files/.DS_Store` and `files/.git/…` never enter the hash, and `ipfs add -r` of the same folder yields the same root. A `content.path` with a hidden segment can never have bytes and is malformed (§8).
 - **A fact has no symbolic links.** A container that holds one cannot reproduce a path → bytes mapping for it; a reader MUST refuse such a container (never follow the link, never silently drop it). This is a deliberate departure from the profile, which preserves symlinks as UnixFS `Type=4` nodes: a folder with a symlink is not an object at all, rather than an object with a different hash.
-- **Body references** are written as in-tree relative paths: `![figure](files/images/fig1.jpg)`. A reference to a path that does not exist is a **broken link** — a rendering-layer placeholder, not a malformed object. An absolute `http(s)` URL in the body is an ordinary external link and MUST NOT be loaded automatically (under end-to-end encryption, an external fetch leaks the reader's identity); it opens on click.
+- **Body references** are resolved by the body's own media type (Markdown, HTML, … each already define how a relative reference resolves against the document); this format only fixes the two things a media type cannot know. **Base:** a body given as `path` is located at that path (`files/body.md` resolves `images/fig1.jpg` to `files/images/fig1.jpg`); a body given as `text` is located at the object root. **Boundary:** a reference that resolves outside the tree, or to a path with no bytes, is a **broken link** — a rendering-layer placeholder, not a malformed object. An absolute `http(s)` URL in the body is an ordinary external link and MUST NOT be loaded automatically (under end-to-end encryption, an external fetch leaks the reader's identity); it opens on click.
 - Media types: `content` is declared by the index; other files under `files/` are typed by extension.
 
 ## 5. Signed Object
@@ -133,7 +133,7 @@ The vocabulary contract of the type format `https://estoc.dev/post/1.0` is defin
 sea-day/                      # folder name carries no semantics
 ├── index.json
 └── files/
-    ├── body.dj
+    ├── body.md
     └── images/
         └── sunset.png
 ```
@@ -145,16 +145,16 @@ sea-day/                      # folder name carries no semantics
   "name": "A Day at the Sea",
   "published": "2026-08-24T10:30:00Z",
   "updated": "2026-08-24T10:30:00Z",
-  "content": { "mediaType": "text/x-djot", "path": "files/body.dj" }
+  "content": { "mediaType": "text/markdown", "path": "files/body.md" }
 }
 ```
 
-Body, `files/body.dj`:
+Body, `files/body.md`:
 
 ```
 The tide started rising at dusk, light flat on the water.
 
-![sunset](files/images/sunset.png)
+![sunset](images/sunset.png)
 ```
 
 A micro-post (the degenerate single-file form):
@@ -164,7 +164,7 @@ A micro-post (the degenerate single-file form):
   "format": "https://estoc.dev/post/1.0",
   "id": "01a03118-52aa-7c31-a0f4-8d2e91c7b355",
   "published": "2026-08-24T12:01:00Z",
-  "content": { "mediaType": "text/x-djot", "text": "Just saw a double rainbow." }
+  "content": { "mediaType": "text/markdown", "text": "Just saw a double rainbow." }
 }
 ```
 

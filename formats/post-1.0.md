@@ -10,7 +10,7 @@ All vocabulary members live in `index.json` beside the structural ones. Names ar
 
 | Member | Req. | Type | Meaning |
 |---|---|---|---|
-| `content` | REQUIRED | structural (§3.1 of the spec) | The body. `mediaType` MUST be a text markup type; this version names `text/x-djot` (djot) as the format the family renders natively, and `text/markdown` (CommonMark, raw HTML ignored) as an accepted alternative. |
+| `content` | REQUIRED | structural (§3.1 of the spec) | The body. `mediaType` MUST be a text markup type; this version names `text/markdown` (CommonMark) as the format the family renders natively. |
 | `name` | OPTIONAL | string | Title, plain text (no markup). A post without a `name` is a note. |
 | `summary` | OPTIONAL | string | One-paragraph plain-text abstract. Used in listings and feeds; never a substitute for the body. |
 | `published` | OPTIONAL | RFC 3339 date-time | When the author first published this entity. Stable across versions. |
@@ -29,9 +29,9 @@ Readers MUST ignore unknown members (spec §3.2). Writers MUST NOT emit `objects
 
 ## 3. Body conventions
 
-- Images and other in-tree assets are referenced by relative path from the object root: `![figure](files/images/fig1.jpg)`. A missing path is a broken link, not a malformed object (spec §4).
+- Images and other in-tree assets are referenced the way the body's media type already resolves relative links — against the body file (`![figure](images/fig1.jpg)` from `files/body.md`); the base and the tree boundary are fixed by spec §4. A missing path is a broken link, not a malformed object.
 - Absolute `http(s)` links are external and MUST NOT be auto-loaded by renderers.
-- djot bodies use only the core syntax; raw HTML blocks (`{=html}`) SHOULD be dropped by renderers.
+- Markdown bodies use CommonMark; raw HTML (blocks and inline) SHOULD be dropped by renderers, never passed through.
 
 ## 4. Example
 
@@ -44,6 +44,6 @@ Readers MUST ignore unknown members (spec §3.2). Writers MUST NOT emit `objects
   "published": "2026-08-24T10:30:00Z",
   "tag": ["sea", "journal"],
   "inLanguage": "en",
-  "content": { "mediaType": "text/x-djot", "path": "files/body.dj" }
+  "content": { "mediaType": "text/markdown", "path": "files/body.md" }
 }
 ```
