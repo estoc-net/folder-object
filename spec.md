@@ -69,7 +69,7 @@ The members defined here form the **structural contract shared by every type for
 
   Whether `content` is required is decided by each type's vocabulary contract (a post will require it).
 
-A type's own vocabulary members (`name`, `published`, `updated`, `summary`, `tag`, … — vocabulary borrowed from Activity Streams 2.0) are orthogonal to the structural members and live in the same `index.json`, as defined by that type's format document.
+A type's own vocabulary members (`title`, `published`, `updated`, `summary`, `tags`, …) are orthogonal to the structural members and live in the same `index.json`, as defined by that type's format document.
 
 ### 3.2 Generic processing and forward compatibility
 
@@ -142,7 +142,7 @@ sea-day/                      # folder name carries no semantics
 {
   "format": "https://estoc.dev/post/1.0",
   "id": "01a03110-7c1e-7b3a-9f42-3d5e8a1b2c04",
-  "name": "A Day at the Sea",
+  "title": "A Day at the Sea",
   "published": "2026-08-24T10:30:00Z",
   "updated": "2026-08-24T10:30:00Z",
   "content": { "mediaType": "text/markdown", "path": "files/body.md" }
@@ -195,4 +195,4 @@ Version-1 reader behavior toward all of these is already pinned (ignore / broken
 ## 12. Open Questions
 
 - `updated` currently belongs to the vocabulary layer, but "latest-authenticated-wins on `id` + `updated`" is a version-arbitration rule generic to all entities — it may belong in the structure layer next to `id`. To be settled together with the dependency table (mutable references fetch the latest version).
-- Where and in what style the vocabulary contracts (post/1.0: `content` required, `name` optional, …) are written down.
+- Where and in what style the vocabulary contracts (post/1.0: `content` required, `title` optional, …) are written down.

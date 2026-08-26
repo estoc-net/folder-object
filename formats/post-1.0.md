@@ -6,17 +6,17 @@ A **post** is an object whose principal bytes are a piece of authored text — a
 
 ## 1. Members
 
-All vocabulary members live in `index.json` beside the structural ones. Names are borrowed from [Activity Streams 2.0](https://www.w3.org/TR/activitystreams-vocabulary/); only the names are borrowed — a post is not JSON-LD and carries no `@context`.
+All vocabulary members live in `index.json` beside the structural ones. Member names are the plain words the publishing world already uses (`title`, `summary`, `published`, `tags`, …); where [Activity Streams 2.0](https://www.w3.org/TR/activitystreams-vocabulary/) has the same word it is the same word, but nothing is borrowed beyond the name — a post is not JSON-LD and carries no `@context`.
 
 | Member | Req. | Type | Meaning |
 |---|---|---|---|
 | `content` | REQUIRED | structural (§3.1 of the spec) | The body. `mediaType` MUST be a text markup type; this version names `text/markdown` (CommonMark) as the format the family renders natively. |
-| `name` | OPTIONAL | string | Title, plain text (no markup). A post without a `name` is a note. |
+| `title` | OPTIONAL | string | Plain text (no markup). A post without a `title` is a note. |
 | `summary` | OPTIONAL | string | One-paragraph plain-text abstract. Used in listings and feeds; never a substitute for the body. |
 | `published` | OPTIONAL | RFC 3339 date-time | When the author first published this entity. Stable across versions. |
 | `updated` | OPTIONAL | RFC 3339 date-time | When this version was made. Absent means equal to `published`. Governs "latest-authenticated-wins" between versions sharing an `id` (spec §12). |
-| `tag` | OPTIONAL | array of strings | Free-form plain-text labels. |
-| `inLanguage` | OPTIONAL | BCP 47 tag | Language of the body (`en`, `zh-Hant`). |
+| `tags` | OPTIONAL | array of strings | Free-form plain-text labels. |
+| `language` | OPTIONAL | BCP 47 tag | Language of the body (`en`, `zh-Hant`). |
 
 Readers MUST ignore unknown members (spec §3.2). Writers MUST NOT emit `objects` (reserved).
 
@@ -39,11 +39,11 @@ Readers MUST ignore unknown members (spec §3.2). Writers MUST NOT emit `objects
 {
   "format": "https://estoc.dev/post/1.0",
   "id": "01a03110-7c1e-7b3a-9f42-3d5e8a1b2c04",
-  "name": "A Day at the Sea",
+  "title": "A Day at the Sea",
   "summary": "Notes from an afternoon watching the tide.",
   "published": "2026-08-24T10:30:00Z",
-  "tag": ["sea", "journal"],
-  "inLanguage": "en",
+  "tags": ["sea", "journal"],
+  "language": "en",
   "content": { "mediaType": "text/markdown", "path": "files/body.md" }
 }
 ```
